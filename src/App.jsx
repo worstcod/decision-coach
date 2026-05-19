@@ -81,14 +81,23 @@ export default function App() {
       validCriteria.forEach(crit => {
         const key = `${opt.id}_${crit.id}`;
         const vals = uncertainties[key] || { min: 0, mode: 50, max: 100 };
-        if (vals.min > vals.max || vals.mode < vals.min || vals.mode > vals.max) {
-          hasError = true;
+        
+        if (crit.isPositive !== false) {
+          // Higher is better: Worst <= Likely <= Best
+          if (vals.min > vals.max || vals.mode < vals.min || vals.mode > vals.max) {
+            hasError = true;
+          }
+        } else {
+          // Lower is better: Worst >= Likely >= Best
+          if (vals.min < vals.max || vals.mode > vals.min || vals.mode < vals.max) {
+            hasError = true;
+          }
         }
       });
     });
 
     if (hasError) {
-      alert("Please fix the invalid ranges highlighted in red. Ensure Worst <= Likely <= Best.");
+      alert("Please fix the invalid ranges highlighted in red. For 'Higher is Better', ensure Worst <= Likely <= Best. For 'Lower is Better', ensure Worst >= Likely >= Best.");
       return;
     }
 
@@ -444,21 +453,21 @@ export default function App() {
                         <div className="flex items-center justify-between text-sm">
                           <label className="text-slate-500 w-20">Worst</label>
                           <div className="flex items-center gap-2">
-                            <input type="number" value={vals.min} onChange={e => updateVal('min', e.target.value)} className={cn("w-24 px-3 py-1 bg-slate-50 border rounded-lg text-right focus:ring-2 outline-none", vals.min > vals.max || vals.min > vals.mode ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-slate-200 focus:ring-indigo-500")} />
+                            <input type="number" value={vals.min} onChange={e => updateVal('min', e.target.value)} className={cn("w-24 px-3 py-1 bg-slate-50 border rounded-lg text-right focus:ring-2 outline-none", (crit.isPositive !== false ? (vals.min > vals.max || vals.min > vals.mode) : (vals.min < vals.max || vals.min < vals.mode)) ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-slate-200 focus:ring-indigo-500")} />
                             <span className="text-slate-400 w-8 text-xs">{crit.unit}</span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <label className="text-slate-700 font-medium w-20">Likely</label>
                           <div className="flex items-center gap-2">
-                            <input type="number" value={vals.mode} onChange={e => updateVal('mode', e.target.value)} className={cn("w-24 px-3 py-1 bg-indigo-50 border font-medium rounded-lg text-right focus:ring-2 outline-none", vals.mode < vals.min || vals.mode > vals.max ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-indigo-200 text-indigo-700 focus:ring-indigo-500")} />
+                            <input type="number" value={vals.mode} onChange={e => updateVal('mode', e.target.value)} className={cn("w-24 px-3 py-1 bg-indigo-50 border font-medium rounded-lg text-right focus:ring-2 outline-none", (crit.isPositive !== false ? (vals.mode < vals.min || vals.mode > vals.max) : (vals.mode > vals.min || vals.mode < vals.max)) ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-indigo-200 text-indigo-700 focus:ring-indigo-500")} />
                             <span className="text-slate-400 w-8 text-xs">{crit.unit}</span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <label className="text-slate-500 w-20">Best</label>
                           <div className="flex items-center gap-2">
-                            <input type="number" value={vals.max} onChange={e => updateVal('max', e.target.value)} className={cn("w-24 px-3 py-1 bg-slate-50 border rounded-lg text-right focus:ring-2 outline-none", vals.max < vals.min || vals.max < vals.mode ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-slate-200 focus:ring-indigo-500")} />
+                            <input type="number" value={vals.max} onChange={e => updateVal('max', e.target.value)} className={cn("w-24 px-3 py-1 bg-slate-50 border rounded-lg text-right focus:ring-2 outline-none", (crit.isPositive !== false ? (vals.max < vals.min || vals.max < vals.mode) : (vals.max > vals.min || vals.max > vals.mode)) ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-slate-200 focus:ring-indigo-500")} />
                             <span className="text-slate-400 w-8 text-xs">{crit.unit}</span>
                           </div>
                         </div>
