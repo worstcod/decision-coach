@@ -46,6 +46,7 @@ export default function App() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [results, setResults] = useState(saved?.results || null);
   const [insights, setInsights] = useState(saved?.insights || null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Save state
   useEffect(() => {
@@ -348,15 +349,22 @@ export default function App() {
       </div>
 
       <div className="space-y-6">
-        {criteria.map((crit, idx) => (
-          <div key={crit.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        {criteria.map((crit, idx) => {
+          const weightPercent = totalWeight > 0 ? (crit.weight / totalWeight) * 100 : 0;
+          return (
+          <div key={crit.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative">
             <div className="flex justify-between mb-3">
               <label className="font-semibold text-slate-900">{crit.name || `Factor ${idx + 1}`}</label>
               <div className="flex items-center gap-2">
-                <span className="text-slate-400 text-sm">{totalWeight > 0 ? Math.round((crit.weight / totalWeight) * 100) : 0}% weight</span>
+                <span className="text-slate-400 text-sm">{Math.round(weightPercent)}% weight</span>
                 <span className="text-indigo-600 font-mono font-bold bg-indigo-50 px-2 py-0.5 rounded-md">{crit.weight} pts</span>
               </div>
             </div>
+            {weightPercent > 50 && criteria.length > 1 && (
+              <div className="mb-3 flex items-center text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+                <AlertTriangle size={14} className="mr-1.5 flex-shrink-0" /> Heads up! This factor will strongly dominate the decision mathematically.
+              </div>
+            )}
             <input 
               type="range" 
               min="0" max="100" 
@@ -371,11 +379,11 @@ export default function App() {
             <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
               <div 
                 className="h-full bg-indigo-500 rounded-full transition-all duration-300" 
-                style={{ width: `${totalWeight > 0 ? (crit.weight / totalWeight) * 100 : 0}%` }}
+                style={{ width: `${weightPercent}%` }}
               />
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       <div className="mt-8 flex justify-end">
@@ -480,32 +488,43 @@ export default function App() {
           ))}
         </div>
 
-        <div className="mt-10 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <h4 className="font-bold text-slate-900 mb-1 flex items-center">
-              Your Risk Tolerance
-              <InfoTooltip>
-                <strong>Risk-Averse:</strong> Mathematically penalizes options that have bad worst-case scenarios.<br/><br/>
-                <strong>Neutral:</strong> Looks purely at the average mathematical outcome.<br/><br/>
-                <strong>Risk-Seeking:</strong> Heavily rewards options with massive best-case potential, ignoring the downside.
-              </InfoTooltip>
-            </h4>
-            <p className="text-sm text-slate-500">How do you feel about taking chances for a higher payoff?</p>
-          </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl">
-            {['risk-averse', 'neutral', 'risk-seeking'].map(prof => (
-              <button
-                key={prof}
-                onClick={() => setRiskProfile(prof)}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all",
-                  riskProfile === prof ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
-                )}
-              >
-                {prof.replace('-', ' ')}
-              </button>
-            ))}
-          </div>
+        <div className="mt-8">
+          <button 
+            onClick={() => setShowAdvanced(!showAdvanced)} 
+            className="flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors"
+          >
+            {showAdvanced ? 'Hide Advanced Settings' : 'Show Advanced Settings (Risk Profiles)'}
+          </button>
+          
+          {showAdvanced && (
+            <div className="mt-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
+              <div>
+                <h4 className="font-bold text-slate-900 mb-1 flex items-center">
+                  Your Risk Tolerance
+                  <InfoTooltip>
+                    <strong>Risk-Averse:</strong> Mathematically penalizes options that have bad worst-case scenarios.<br/><br/>
+                    <strong>Neutral:</strong> Looks purely at the average mathematical outcome.<br/><br/>
+                    <strong>Risk-Seeking:</strong> Heavily rewards options with massive best-case potential, ignoring the downside.
+                  </InfoTooltip>
+                </h4>
+                <p className="text-sm text-slate-500">How do you feel about taking chances for a higher payoff?</p>
+              </div>
+              <div className="flex bg-slate-100 p-1 rounded-xl">
+                {['risk-averse', 'neutral', 'risk-seeking'].map(prof => (
+                  <button
+                    key={prof}
+                    onClick={() => setRiskProfile(prof)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all",
+                      riskProfile === prof ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    {prof.replace('-', ' ')}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-8 flex justify-between">
@@ -564,8 +583,8 @@ export default function App() {
     
     const riskData = Object.values(results.results).map(opt => ({
       name: opt.name,
-      'Downside Risk %': Math.round(opt.downsideRisk * 100),
-      'Upside Potential %': Math.round((opt.scores.filter(s => s > opt.mean + opt.stdDev).length / results.iterations) * 100)
+      'Volatility (Spread)': Math.round(opt.stdDev * 100),
+      'Expected Regret': Math.round(opt.expectedRegret * 100)
     }));
     
     const optionColors = ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
@@ -756,8 +775,8 @@ export default function App() {
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-            <h3 className="font-bold text-slate-900 mb-2">Volatility (Risk vs Upside)</h3>
-            <p className="text-sm text-slate-500 mb-6">Probability of experiencing an extreme outcome (good or bad) compared to the average expectation.</p>
+            <h3 className="font-bold text-slate-900 mb-2">Uncertainty Profile</h3>
+            <p className="text-sm text-slate-500 mb-6">Compares absolute unpredictability (Volatility) against the cost of being wrong (Expected Regret).</p>
             <div className="flex-1 min-h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={riskData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
@@ -766,8 +785,8 @@ export default function App() {
                   <YAxis hide />
                   <RechartsTooltip cursor={{fill: '#f1f5f9'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
                   <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                  <Bar dataKey="Downside Risk %" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Upside Potential %" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Expected Regret" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Volatility (Spread)" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
