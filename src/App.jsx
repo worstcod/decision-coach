@@ -166,7 +166,12 @@ export default function App() {
   const renderDecisionType = () => (
     <div className="max-w-4xl mx-auto py-12 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-slate-900">What kind of decision are you making?</h2>
+        <h2 className="text-3xl font-bold text-slate-900">
+          What kind of decision are you making?
+          <InfoTooltip>
+            Selecting a template will simply pre-fill some common factors (like Salary or Commute Time) to save you time. You can fully edit, delete, or add factors later.
+          </InfoTooltip>
+        </h2>
         <p className="text-slate-500 mt-2">Select a template to preload common factors, or start from scratch.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -189,7 +194,12 @@ export default function App() {
 
   const renderOptions = () => (
     <div className="max-w-2xl mx-auto py-12 px-4 animate-in fade-in slide-in-from-bottom-4">
-      <h2 className="text-3xl font-bold text-slate-900 mb-2">What are your options?</h2>
+      <h2 className="text-3xl font-bold text-slate-900 mb-2">
+        What are your options?
+        <InfoTooltip>
+          <strong>Options</strong> are the different choices you are deciding between (e.g., Job A vs Job B, or Startup vs Corporate). You can compare up to 5 options.
+        </InfoTooltip>
+      </h2>
       <p className="text-slate-500 mb-8">Enter the choices you are considering (2 to 5 options).</p>
       
       <div className="space-y-4">
@@ -459,21 +469,30 @@ export default function App() {
                       
                       <div className="space-y-4 ml-2 mt-4">
                         <div className="flex items-center justify-between text-sm">
-                          <label className="text-slate-500 w-20">Worst</label>
+                          <label className="text-slate-500 w-28 flex items-center">
+                            Worst
+                            <InfoTooltip>The absolute worst-case realistic scenario. Don't be too optimistic here; capture the true downside.</InfoTooltip>
+                          </label>
                           <div className="flex items-center gap-2">
                             <input type="number" value={vals.min} onChange={e => updateVal('min', e.target.value)} className={cn("w-24 px-3 py-1 bg-slate-50 border rounded-lg text-right focus:ring-2 outline-none", (crit.isPositive !== false ? (vals.min > vals.max || vals.min > vals.mode) : (vals.min < vals.max || vals.min < vals.mode)) ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-slate-200 focus:ring-indigo-500")} />
                             <span className="text-slate-400 w-8 text-xs">{crit.unit}</span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <label className="text-slate-700 font-medium w-20">Likely</label>
+                          <label className="text-slate-700 font-medium w-28 flex items-center">
+                            Likely
+                            <InfoTooltip>The single most realistic, probable outcome you expect to happen.</InfoTooltip>
+                          </label>
                           <div className="flex items-center gap-2">
                             <input type="number" value={vals.mode} onChange={e => updateVal('mode', e.target.value)} className={cn("w-24 px-3 py-1 bg-indigo-50 border font-medium rounded-lg text-right focus:ring-2 outline-none", (crit.isPositive !== false ? (vals.mode < vals.min || vals.mode > vals.max) : (vals.mode > vals.min || vals.mode < vals.max)) ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-indigo-200 text-indigo-700 focus:ring-indigo-500")} />
                             <span className="text-slate-400 w-8 text-xs">{crit.unit}</span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <label className="text-slate-500 w-20">Best</label>
+                          <label className="text-slate-500 w-28 flex items-center">
+                            Best
+                            <InfoTooltip>The absolute best-case scenario if everything goes perfectly.</InfoTooltip>
+                          </label>
                           <div className="flex items-center gap-2">
                             <input type="number" value={vals.max} onChange={e => updateVal('max', e.target.value)} className={cn("w-24 px-3 py-1 bg-slate-50 border rounded-lg text-right focus:ring-2 outline-none", (crit.isPositive !== false ? (vals.max < vals.min || vals.max < vals.mode) : (vals.max > vals.min || vals.max > vals.mode)) ? "border-red-400 text-red-600 focus:ring-red-500 bg-red-50" : "border-slate-200 focus:ring-indigo-500")} />
                             <span className="text-slate-400 w-8 text-xs">{crit.unit}</span>
