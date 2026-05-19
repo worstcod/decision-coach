@@ -3,7 +3,7 @@ import { Brain, ArrowRight, Plus, Trash2, RotateCcw, AlertTriangle, TrendingUp, 
 import { PRESETS } from './presets';
 import Tutorial from './Tutorial';
 import { runSimulation, generateInsights } from './math-engine';
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, CartesianGrid, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -533,6 +533,34 @@ export default function App() {
       WinProb: Math.round(opt.winProbability * 100)
     }));
 
+    // Data for Factor Comparison (Radar Chart)
+    const radarData = results.normalizedCriteria.map(crit => {
+      const dataPoint = { subject: crit.name };
+      Object.values(results.results).forEach(opt => {
+        const input = uncertainties[`${opt.id}_${crit.id}`] || { mode: 0 };
+        const bounds = results.criteriaBounds[crit.id];
+        let normalized = 0;
+        if (bounds && bounds.max > bounds.min) {
+          normalized = (input.mode - bounds.min) / (bounds.max - bounds.min);
+          if (crit.isPositive === false) {
+            normalized = 1 - normalized;
+          }
+        } else {
+          normalized = 1;
+        }
+        dataPoint[opt.name] = Math.round(normalized * 100);
+      });
+      return dataPoint;
+    });
+    
+    const riskData = Object.values(results.results).map(opt => ({
+      name: opt.name,
+      'Downside Risk %': Math.round(opt.downsideRisk * 100),
+      'Upside Potential %': Math.round((opt.scores.filter(s => s > opt.mean + opt.stdDev).length / results.iterations) * 100)
+    }));
+    
+    const optionColors = ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+
     // Data for histogram of the winner
     const histBins = 20;
     const scores = winner.scores;
@@ -687,6 +715,53 @@ export default function App() {
                 <Bar dataKey="count" fill="#818cf8" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* ADVANCED VISUALIZATIONS */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+            <h3 className="font-bold text-slate-900 mb-2">Factor Comparison</h3>
+            <p className="text-sm text-slate-500 mb-6">Normalized comparison of options based on your most likely estimates (further out is better).</p>
+            <div className="flex-1 min-h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 12, fontWeight: 500 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                  <RechartsTooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                  {Object.values(results.results).map((opt, idx) => (
+                    <Radar
+                      key={opt.id}
+                      name={opt.name}
+                      dataKey={opt.name}
+                      stroke={optionColors[idx % optionColors.length]}
+                      fill={optionColors[idx % optionColors.length]}
+                      fillOpacity={0.4}
+                    />
+                  ))}
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+            <h3 className="font-bold text-slate-900 mb-2">Volatility (Risk vs Upside)</h3>
+            <p className="text-sm text-slate-500 mb-6">Probability of experiencing an extreme outcome (good or bad) compared to the average expectation.</p>
+            <div className="flex-1 min-h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={riskData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#475569', fontWeight: 500}} />
+                  <YAxis hide />
+                  <RechartsTooltip cursor={{fill: '#f1f5f9'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                  <Bar dataKey="Downside Risk %" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Upside Potential %" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 

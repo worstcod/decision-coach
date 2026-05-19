@@ -171,6 +171,7 @@ export function runSimulation(options, criteria, uncertainties, iterations = 200
     results,
     winningOptionId,
     normalizedCriteria,
+    criteriaBounds,
     iterations
   };
 }
