@@ -128,15 +128,21 @@ export function runSimulation(options, criteria, uncertainties, iterations = 200
   for (let i = 0; i < iterations; i++) {
     let maxScore = -Infinity;
     let winnerId = null;
+    let tieIds = [];
 
     options.forEach(opt => {
       const score = simulatedScores[opt.id][i];
       if (score > maxScore) {
         maxScore = score;
         winnerId = opt.id;
+        tieIds = [opt.id];
+      } else if (score === maxScore) {
+        tieIds.push(opt.id);
       }
     });
 
+    // Resolve ties randomly to prevent first-option bias
+    winnerId = tieIds[Math.floor(Math.random() * tieIds.length)];
     results[winnerId].wins += 1;
 
     // Regret calculation
