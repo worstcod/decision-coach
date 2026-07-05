@@ -64,10 +64,10 @@ const TUTORIAL_STEPS = [
     icon: <PieChart className="w-8 h-8 text-rose-500" />,
     content: (
       <div className="space-y-4 text-slate-600">
-        <p>The app simulates up to <strong>10,000 possible parallel universes</strong>. In each universe, it pulls random variables from your Beta-PERT curves, normalizes them, weights them, applies your Risk Utility, and calculates a final score.</p>
+        <p>The app simulates <strong>10,000 possible parallel universes</strong>. In each universe, it pulls random variables from your Beta-PERT curves, normalizes them, weights them, applies your risk utility, and calculates a final score.</p>
         <h4 className="font-bold text-slate-900 mt-4">Understanding the Metrics:</h4>
         <ul className="space-y-2 text-sm md:text-base">
-          <li><strong className="text-slate-800">Win Probability:</strong> The percentage of simulated universes where this option had the highest final score.</li>
+          <li><strong className="text-slate-800">Win Probability:</strong> The percentage of simulated universes where this option had the highest utility-adjusted score.</li>
           <li><strong className="text-slate-800">Downside Risk:</strong> The mathematical probability of an option scoring severely below the average outcome.</li>
           <li><strong className="text-slate-800">Expected Utility:</strong> The true average value of the option <em>after</em> applying your psychological risk profile.</li>
         </ul>

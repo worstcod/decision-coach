@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">decision-coach</string>
-    <string name="title_activity_main">decision-coach</string>
+    <string name="app_name">Decision Coach</string>
+    <string name="title_activity_main">Decision Coach</string>
     <string name="package_name">com.decisioncoach.app</string>
     <string name="custom_url_scheme">com.decisioncoach.app</string>
 </resources>

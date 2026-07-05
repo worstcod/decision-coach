@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Keys and secrets
+kk
+kk.pub
+*.pem
+id_*
+!.gitignore

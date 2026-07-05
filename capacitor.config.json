@@ -1,5 +1,24 @@
 {
   "appId": "com.decisioncoach.app",
-  "appName": "decision-coach",
-  "webDir": "dist"
+  "appName": "Decision Coach",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#4f46e5",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    }
+  },
+  "android": {
+    "backgroundColor": "#f8fafc"
+  },
+  "ios": {
+    "backgroundColor": "#f8fafc",
+    "contentInset": "automatic"
+  }
 }
